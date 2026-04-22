@@ -1,4 +1,5 @@
 import { access, readFile, writeFile } from "node:fs/promises";
+import path from "node:path";
 
 import fontkit from "@pdf-lib/fontkit";
 import {
@@ -669,12 +670,28 @@ export async function generateCatalogPdf({
   pdfDoc.registerFontkit(fontkit);
 
   const regularFontBytes = await readFirstAvailableFont([
+    path.join(
+      process.cwd(),
+      "node_modules",
+      "@fontsource",
+      "noto-sans",
+      "files",
+      "noto-sans-cyrillic-400-normal.woff",
+    ),
     "C:\\Windows\\Fonts\\arial.ttf",
     "C:\\Windows\\Fonts\\segoeui.ttf",
     "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
     "/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf",
   ]);
   const titleFontBytes = await readFirstAvailableFont([
+    path.join(
+      process.cwd(),
+      "node_modules",
+      "@fontsource",
+      "noto-serif",
+      "files",
+      "noto-serif-cyrillic-700-normal.woff",
+    ),
     "C:\\Windows\\Fonts\\georgiab.ttf",
     "C:\\Windows\\Fonts\\arialbd.ttf",
     "/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf",

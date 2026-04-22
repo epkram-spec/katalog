@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { CatalogGenerator } from "@/components/catalog-generator";
 
 export default function Home() {
@@ -5,36 +7,39 @@ export default function Home() {
     <main className="shell">
       <section className="hero">
         <div className="hero__copy">
-          <span className="eyebrow">PDF catalog studio</span>
-          <h1>Перетворюйте таблиці на акуратні PDF-каталоги за кілька хвилин.</h1>
+          <div className="hero__topline">
+            <span className="eyebrow">Katalog</span>
+            <Link className="subtle-link" href="/instructions">
+              Інструкції
+            </Link>
+          </div>
+          <h1>Зберіть охайний PDF-каталог з таблиці без зайвих кроків.</h1>
           <p>
-            Завантажте Excel або CSV, або вставте публічне посилання на Google
-            Sheets. Система перевірить дані, покаже помилки й warning-и,
-            згенерує каталог у вибраному стилі та поверне готовий PDF.
+            Завантажте Excel, CSV або вставте публічне посилання на Google
+            Sheets. Сервіс перевірить дані, оформить каталог у вибраному стилі та
+            підготує PDF для завантаження.
           </p>
           <div className="hero__meta">
-            <span>Без авторизації</span>
-            <span>Без бази даних</span>
-            <span>Підходить для A4</span>
+            <span>2 стилі оформлення</span>
+            <span>Підготовлено для A4</span>
+            <span>Швидкий старт з demo-файлом</span>
           </div>
         </div>
         <div className="hero__card">
-          <p>Очікувані колонки</p>
+          <p>Що знадобиться в таблиці</p>
           <ul>
             <li>
-              <code>product_name</code>, <code>sku</code>, <code>brand</code>,{" "}
-              <code>category</code>
+              Назва товару в <code>product_name</code>
             </li>
             <li>
-              <code>short_description</code>, <code>description</code>,{" "}
-              <code>price</code>
+              Головне фото в <code>image_1</code>
             </li>
             <li>
-              <code>image_1</code>, <code>image_2</code>, <code>image_3</code>,{" "}
-              <code>order</code>
+              Додаткові поля: <code>sku</code>, <code>brand</code>,{" "}
+              <code>category</code>, <code>price</code>
             </li>
             <li>
-              Будь-які характеристики з префіксом <code>attr_</code>
+              Характеристики через колонки <code>attr_*</code>
             </li>
           </ul>
         </div>

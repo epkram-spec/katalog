@@ -4,7 +4,8 @@ import path from "node:path";
 
 import { appConfig } from "@/lib/config";
 
-export const GENERATED_DIR = path.join(process.cwd(), "tmp", "generated");
+const BASE_TEMP_DIR = process.env.VERCEL ? "/tmp" : path.join(process.cwd(), "tmp");
+export const GENERATED_DIR = path.join(BASE_TEMP_DIR, "generated");
 
 export async function ensureGeneratedDir() {
   await mkdir(GENERATED_DIR, {

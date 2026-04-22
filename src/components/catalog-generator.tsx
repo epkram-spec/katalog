@@ -24,12 +24,12 @@ const templateOptions: Array<{ value: CatalogTemplate; label: string; descriptio
   {
     value: "classic-b2b",
     label: "Classic B2B",
-    description: "Більш діловий стиль для прайсів, дилерів і комерційних PDF.",
+    description: "Спокійний, діловий стиль для комерційних каталогів.",
   },
   {
     value: "minimal-modern",
     label: "Minimal Modern",
-    description: "Легший візуальний стиль для шоурумів, брендів і презентацій.",
+    description: "Легший сучасний стиль для брендів, шоурумів і презентацій.",
   },
 ];
 
@@ -80,7 +80,7 @@ export function CatalogGenerator() {
       setResult(payload as ApiSuccess);
     } catch {
       setError({
-        error: "Не вдалося згенерувати каталог. Перевірте дані та спробуйте ще раз.",
+        error: "Не вдалося згенерувати каталог. Спробуйте ще раз.",
       });
     } finally {
       setIsLoading(false);
@@ -98,23 +98,15 @@ export function CatalogGenerator() {
 
   return (
     <section className="grid">
-      <div className="panel">
-        <h2>Створити каталог</h2>
-        <p className="section-copy">
-          Оберіть джерело даних, стиль каталогу та, за бажанням, email для
-          автоматичної відправки PDF. Якщо є критичні помилки, сервіс їх покаже.
-          Якщо є лише warning-и, PDF все одно буде створено.
-        </p>
-
-        <div className="mode-grid">
-          <div className="mode-card">
-            <strong>Файл</strong>
-            <p className="muted">Підтримуються таблиці Excel та CSV.</p>
+      <div className="panel panel--form">
+        <div className="section-head">
+          <div>
+            <h2>Створити каталог</h2>
+            <p className="section-copy">
+              Оберіть файл або вставте публічне посилання на Google Sheets.
+            </p>
           </div>
-          <div className="mode-card">
-            <strong>Google Sheets</strong>
-            <p className="muted">Працює лише з публічними посиланнями.</p>
-          </div>
+          <span className="tag">PDF для друку</span>
         </div>
 
         <form className="form" onSubmit={handleSubmit}>
@@ -127,13 +119,10 @@ export function CatalogGenerator() {
               accept=".xlsx,.csv"
               onChange={(event) => setSourceFile(event.target.files?.[0] ?? null)}
             />
-            <small>
-              Якщо ви обрали файл, поле Google Sheets можна залишити порожнім.
-            </small>
           </div>
 
           <div className="field">
-            <label htmlFor="sheetUrl">Посилання на Google Sheets</label>
+            <label htmlFor="sheetUrl">Або посилання на Google Sheets</label>
             <input
               id="sheetUrl"
               className="input"
@@ -142,14 +131,10 @@ export function CatalogGenerator() {
               value={sheetUrl}
               onChange={(event) => setSheetUrl(event.target.value)}
             />
-            <small>
-              Підтримуються публічні посилання виду <code>/spreadsheets/d/ID</code>.{" "}
-              Якщо в URL є <code>gid</code>, буде використано саме цей лист.
-            </small>
           </div>
 
           <div className="field">
-            <label htmlFor="template">Шаблон каталогу</label>
+            <label htmlFor="template">Стиль каталогу</label>
             <select
               id="template"
               className="input"
@@ -163,8 +148,6 @@ export function CatalogGenerator() {
               ))}
             </select>
             <small>
-              <strong>{templateOptions.find((option) => option.value === template)?.label}</strong>
-              :{" "}
               {templateOptions.find((option) => option.value === template)?.description}
             </small>
           </div>
@@ -179,15 +162,12 @@ export function CatalogGenerator() {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
             />
-            <small>
-              Необов’язково. Якщо SMTP не налаштований, генерація PDF все одно
-              працюватиме, але без email-відправки.
-            </small>
+            <small>Необов’язково.</small>
           </div>
 
           <div className="actions">
             <button className="button button--primary" type="submit" disabled={isLoading}>
-              {isLoading ? "Генеруємо PDF..." : "Згенерувати каталог"}
+              {isLoading ? "Генеруємо..." : "Створити PDF"}
             </button>
             <button
               className="button button--secondary"
@@ -195,13 +175,13 @@ export function CatalogGenerator() {
               onClick={handleReset}
               disabled={isLoading}
             >
-              Очистити форму
+              Очистити
             </button>
           </div>
         </form>
 
         {error ? (
-          <div className="alert" style={{ marginTop: 20 }}>
+          <div className="alert" style={{ marginTop: 18 }}>
             <p>{error.error}</p>
             {error.validationErrors?.length ? (
               <ul className="status-list">
@@ -214,7 +194,7 @@ export function CatalogGenerator() {
             ) : null}
             {error.warnings?.length ? (
               <div className="warning-card">
-                <p>Warning-и, які не блокують генерацію:</p>
+                <p>Попередження:</p>
                 <ul className="status-list">
                   {error.warnings.map((issue, index) => (
                     <li key={`${issue.row}-${issue.field}-warning-${index}`}>
@@ -228,13 +208,12 @@ export function CatalogGenerator() {
         ) : null}
 
         {result ? (
-          <div className="result-card" style={{ marginTop: 20 }}>
-            <p>Каталог згенеровано. Товарів у PDF: {result.productCount}.</p>
+          <div className="result-card" style={{ marginTop: 18 }}>
+            <p>Готово. У каталозі {result.productCount} товарів.</p>
             {result.downloadUrl ? (
               <p style={{ marginTop: 8 }}>
-                Завантажити PDF:{" "}
                 <a href={result.downloadUrl} target="_blank" rel="noreferrer">
-                  {result.fileName ?? "catalog.pdf"}
+                  Завантажити PDF
                 </a>
               </p>
             ) : null}
@@ -243,20 +222,14 @@ export function CatalogGenerator() {
                 PDF надіслано на <strong>{result.emailedTo}</strong>.
               </p>
             ) : null}
-            {result.fileDeletedAfterEmail ? (
-              <p style={{ marginTop: 8 }}>
-                Після успішної email-відправки файл було видалено.
-              </p>
-            ) : null}
             {result.expiresAt ? (
               <p style={{ marginTop: 8 }}>
-                Посилання доступне тимчасово, до{" "}
-                {new Date(result.expiresAt).toLocaleString("uk-UA")}.
+                Посилання активне до {new Date(result.expiresAt).toLocaleString("uk-UA")}.
               </p>
             ) : null}
             {result.warnings.length ? (
-              <div className="warning-card" style={{ marginTop: 14 }}>
-                <p>Warning-и по таблиці:</p>
+              <div className="warning-card" style={{ marginTop: 12 }}>
+                <p>Попередження:</p>
                 <ul className="status-list">
                   {result.warnings.map((issue, index) => (
                     <li key={`${issue.row}-${issue.field}-result-${index}`}>
@@ -272,13 +245,12 @@ export function CatalogGenerator() {
 
       <aside className="panel panel--stack">
         <div>
-          <h3>Що вже є</h3>
+          <h3>Що буде в PDF</h3>
           <ul className="feature-list">
-            <li>Валідація обов’язкових полів і URL картинок.</li>
-            <li>Ігнорування повністю порожніх рядків.</li>
-            <li>2 шаблони: Classic B2B і Minimal Modern.</li>
-            <li>Плейсхолдер, якщо зображення не завантажилось.</li>
-            <li>Фінальна контактна сторінка в PDF.</li>
+            <li>Обкладинка</li>
+            <li>Список товарів</li>
+            <li>Сторінки з фото, описом і характеристиками</li>
+            <li>Фінальна контактна сторінка</li>
           </ul>
         </div>
 
@@ -287,27 +259,16 @@ export function CatalogGenerator() {
         <div>
           <h3>Demo-файли</h3>
           <p className="section-copy">
-            У репозиторії є готові приклади з 5 товарами для швидкої перевірки.
+            Можна одразу перевірити роботу на готовому наборі з 5 товарами.
           </p>
           <div className="demo-links">
             <a href="/demo/catalog-demo.csv" download>
-              Завантажити CSV demo
+              CSV demo
             </a>
             <a href="/demo/catalog-demo.xlsx" download>
-              Завантажити XLSX demo
+              XLSX demo
             </a>
           </div>
-        </div>
-
-        <div className="divider" />
-
-        <div>
-          <h3>Важливо про хостинг</h3>
-          <p className="section-copy">
-            Цей застосунок не підходить для GitHub Pages, бо він має серверні API
-            routes і PDF-генерацію через Node.js. Для продакшн або демо краще
-            використовувати Vercel.
-          </p>
         </div>
       </aside>
     </section>

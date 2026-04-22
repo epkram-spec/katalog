@@ -1,36 +1,187 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Katalog
 
-## Getting Started
+Мінімалістичний веб-застосунок на `Next.js + TypeScript` для генерації PDF-каталогів із `Excel`, `CSV` або `Google Sheets`.
 
-First, run the development server:
+## Що вміє MVP
+
+- Завантаження `.xlsx` або `.csv`.
+- Імпорт із публічного `Google Sheets` за посиланням.
+- Перетворення кожного рядка таблиці на товар.
+- Підтримка базових колонок:
+  - `product_name`, `sku`, `brand`, `category`
+  - `short_description`, `description`, `price`
+  - `image_1`, `image_2`, `image_3`, `order`
+  - будь-які характеристики з префіксом `attr_`
+- Валідація:
+  - обов'язковий `product_name`
+  - обов'язковий `image_1`
+  - перевірка URL у `image_1..image_3`
+- Генерація HTML-каталогу з:
+  - обкладинкою
+  - списком товарів
+  - сторінками товарів
+  - таблицею характеристик
+- Генерація PDF через `Playwright`.
+- Тимчасове зберігання PDF у `tmp/generated`.
+- Опційна відправка PDF на email через SMTP.
+- Автоочистка старих PDF за TTL.
+
+## Технології
+
+- `Next.js 16`
+- `TypeScript`
+- `Playwright`
+- `xlsx`
+- `nodemailer`
+- `zod`
+
+## Швидкий старт
+
+1. Встановіть залежності:
+
+```bash
+npm install
+```
+
+2. Встановіть Chromium для Playwright:
+
+```bash
+npm run playwright:install
+```
+
+3. Створіть локальний env-файл:
+
+```bash
+cp .env.example .env.local
+```
+
+4. Запустіть dev-сервер:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+5. Відкрийте [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Налаштування email
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Щоб відправляти PDF на email, заповніть у `.env.local`:
 
-## Learn More
+```env
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=mailer@example.com
+SMTP_PASS=your-password
+SMTP_FROM=Catalog Bot <mailer@example.com>
+```
 
-To learn more about Next.js, take a look at the following resources:
+### Додаткові параметри
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```env
+PDF_TTL_MINUTES=60
+DELETE_PDF_AFTER_EMAIL=false
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `PDF_TTL_MINUTES` визначає, скільки хвилин PDF зберігається у `public/generated`.
+- `DELETE_PDF_AFTER_EMAIL=true` видаляє файл одразу після успішної email-відправки.
 
-## Deploy on Vercel
+## Формат таблиці
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Обов'язкові колонки
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `product_name`
+- `image_1`
+
+### Рекомендовані колонки
+
+- `sku`
+- `brand`
+- `category`
+- `short_description`
+- `description`
+- `price`
+- `image_2`
+- `image_3`
+- `order`
+
+### Характеристики
+
+Будь-яка колонка, що починається з `attr_`, потрапить у таблицю характеристик.
+
+Приклади:
+
+- `attr_color`
+- `attr_material`
+- `attr_size`
+- `attr_warranty`
+
+## Google Sheets
+
+MVP підтримує лише публічні Google Sheets без авторизації.
+
+Підійдуть стандартні посилання виду:
+
+```text
+https://docs.google.com/spreadsheets/d/SPREADSHEET_ID/edit#gid=0
+```
+
+Застосунок автоматично перетворює їх у CSV export URL.
+
+## Demo-файли
+
+У репозиторії є приклади з 5 товарами:
+
+- `public/demo/catalog-demo.csv`
+- `public/demo/catalog-demo.xlsx`
+
+Щоб згенерувати XLSX заново:
+
+```bash
+npm run demo:xlsx
+```
+
+## Де зберігається PDF
+
+Готові PDF потрапляють у:
+
+```text
+tmp/generated
+```
+
+Файли очищаються автоматично при наступних генераціях, якщо їхній вік перевищив `PDF_TTL_MINUTES`.
+
+## Архітектура
+
+```text
+src/
+  app/
+    api/catalog/generate/route.ts
+    layout.tsx
+    page.tsx
+  components/
+    catalog-generator.tsx
+  lib/
+    catalog.ts
+    config.ts
+    email.ts
+    google-sheets.ts
+    html-template.ts
+    pdf.ts
+    storage.ts
+    types.ts
+public/
+  demo/
+tmp/
+  generated/
+scripts/
+  create-demo-xlsx.mjs
+```
+
+## Обмеження MVP
+
+- Без авторизації.
+- Без бази даних.
+- Без історії генерацій.
+- Google Sheets працює лише для публічних таблиць.
+- Тимчасове зберігання PDF локальне, що підходить для MVP або self-hosted запуску.

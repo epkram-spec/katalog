@@ -12,7 +12,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const emailSchema = z.string().trim().email();
-const templateSchema = z.enum(["classic-b2b", "minimal-modern"]);
+const templateSchema = z.enum(["classic-b2b", "minimal-modern", "grid"]);
 
 export async function POST(request: Request) {
   try {

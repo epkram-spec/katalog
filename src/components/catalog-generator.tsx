@@ -18,17 +18,59 @@ type ApiSuccess = {
   warnings: CatalogIssue[];
 };
 
-const templateOptions: Array<{ value: CatalogTemplate; label: string; description: string }> = [
+const templateOptions: Array<{ value: CatalogTemplate; label: string; description: string; preview: React.ReactNode }> = [
   {
     value: "classic-b2b",
     label: "Classic B2B",
     description: "Спокійний, діловий стиль для комерційних каталогів.",
+    preview: (
+      <svg width="100%" height="100%" viewBox="0 0 100 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="10" y="10" width="80" height="20" rx="2" fill="#cbd5e1"/>
+        <rect x="10" y="40" width="30" height="30" rx="2" fill="#e2e8f0"/>
+        <rect x="45" y="40" width="45" height="4" rx="2" fill="#94a3b8"/>
+        <rect x="45" y="48" width="30" height="4" rx="2" fill="#cbd5e1"/>
+        <rect x="45" y="56" width="35" height="4" rx="2" fill="#cbd5e1"/>
+        <rect x="10" y="80" width="30" height="30" rx="2" fill="#e2e8f0"/>
+        <rect x="45" y="80" width="45" height="4" rx="2" fill="#94a3b8"/>
+        <rect x="45" y="88" width="30" height="4" rx="2" fill="#cbd5e1"/>
+        <rect x="45" y="96" width="35" height="4" rx="2" fill="#cbd5e1"/>
+      </svg>
+    )
   },
   {
     value: "minimal-modern",
     label: "Minimal Modern",
     description: "Легший сучасний стиль для брендів, шоурумів і презентацій.",
+    preview: (
+      <svg width="100%" height="100%" viewBox="0 0 100 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="25" y="10" width="50" height="40" rx="2" fill="#e2e8f0"/>
+        <rect x="20" y="60" width="60" height="6" rx="3" fill="#94a3b8"/>
+        <rect x="30" y="72" width="40" height="4" rx="2" fill="#cbd5e1"/>
+        <rect x="35" y="80" width="30" height="4" rx="2" fill="#cbd5e1"/>
+      </svg>
+    )
   },
+  {
+    value: "grid",
+    label: "Сітка (Grid)",
+    description: "Компактне розміщення: 6-8 товарів на одній сторінці.",
+    preview: (
+      <svg width="100%" height="100%" viewBox="0 0 100 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="10" y="10" width="35" height="35" rx="2" fill="#e2e8f0"/>
+        <rect x="10" y="48" width="20" height="3" rx="1.5" fill="#94a3b8"/>
+        <rect x="10" y="54" width="30" height="2" rx="1" fill="#cbd5e1"/>
+        <rect x="55" y="10" width="35" height="35" rx="2" fill="#e2e8f0"/>
+        <rect x="55" y="48" width="20" height="3" rx="1.5" fill="#94a3b8"/>
+        <rect x="55" y="54" width="30" height="2" rx="1" fill="#cbd5e1"/>
+        <rect x="10" y="65" width="35" height="35" rx="2" fill="#e2e8f0"/>
+        <rect x="10" y="103" width="20" height="3" rx="1.5" fill="#94a3b8"/>
+        <rect x="10" y="109" width="30" height="2" rx="1" fill="#cbd5e1"/>
+        <rect x="55" y="65" width="35" height="35" rx="2" fill="#e2e8f0"/>
+        <rect x="55" y="103" width="20" height="3" rx="1.5" fill="#94a3b8"/>
+        <rect x="55" y="109" width="30" height="2" rx="1" fill="#cbd5e1"/>
+      </svg>
+    )
+  }
 ];
 
 function parseHeaderJson<T>(value: string | null, fallback: T) {
@@ -193,22 +235,22 @@ export function CatalogGenerator() {
           </div>
 
           <div className="field">
-            <label htmlFor="template">Стиль каталогу</label>
-            <select
-              id="template"
-              className="input"
-              value={template}
-              onChange={(event) => setTemplate(event.target.value as CatalogTemplate)}
-            >
+            <label>Стиль каталогу</label>
+            <div className="template-cards">
               {templateOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
+                <div
+                  key={option.value}
+                  className={`template-card ${template === option.value ? "active" : ""}`}
+                  onClick={() => setTemplate(option.value)}
+                >
+                  <div className="template-preview">
+                    {option.preview}
+                  </div>
+                  <strong>{option.label}</strong>
+                  <small>{option.description}</small>
+                </div>
               ))}
-            </select>
-            <small>
-              {templateOptions.find((option) => option.value === template)?.description}
-            </small>
+            </div>
           </div>
 
           <div className="field">

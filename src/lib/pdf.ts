@@ -42,6 +42,18 @@ async function readFirstAvailableFont(paths: string[]) {
 }
 
 function getTheme(template: CatalogTemplate): Theme {
+  if (template === "grid") {
+    return {
+      name: "Каталог-сітка",
+      bg: rgb(1, 1, 1),
+      panel: rgb(1, 1, 1),
+      panelSoft: rgb(0.96, 0.97, 0.98),
+      text: rgb(0.12, 0.16, 0.22),
+      muted: rgb(0.45, 0.5, 0.55),
+      accent: rgb(0.15, 0.35, 0.65),
+    };
+  }
+
   if (template === "minimal-modern") {
     return {
       name: "Minimal Modern",
@@ -657,15 +669,136 @@ function addContactPage(
   });
 }
 
+async function addGridProductsPages(
+  pdfDoc: PDFDocument,
+  theme: Theme,
+  titleFont: PDFFont,
+  bodyFont: PDFFont,
+  products: CatalogProduct[]
+) {
+  const ITEMS_PER_PAGE = 6;
+  const cols = 2;
+  const gapX = 20;
+  const gapY = 20;
+  const usableWidth = PAGE.width - PAGE.margin * 2;
+  const itemWidth = (usableWidth - gapX) / 2;
+  const usableHeight = PAGE.height - PAGE.margin * 2 - 40;
+  const itemHeight = (usableHeight - gapY * 2) / 3;
+
+  for (let i = 0; i < products.length; i += ITEMS_PER_PAGE) {
+    const pageProducts = products.slice(i, i + ITEMS_PER_PAGE);
+    const page = pdfDoc.addPage([PAGE.width, PAGE.height]);
+
+    page.drawRectangle({
+      x: 0,
+      y: 0,
+      width: PAGE.width,
+      height: PAGE.height,
+      color: theme.bg,
+    });
+
+    page.drawText(`Сторінка ${Math.floor(i / ITEMS_PER_PAGE) + 1}`, {
+      x: PAGE.margin,
+      y: PAGE.height - 30,
+      size: 10,
+      font: bodyFont,
+      color: theme.muted,
+    });
+
+    for (let j = 0; j < pageProducts.length; j++) {
+      const product = pageProducts[j];
+      const col = j % cols;
+      const row = Math.floor(j / cols);
+
+      const x = PAGE.margin + col * (itemWidth + gapX);
+      const y = PAGE.height - 60 - row * (itemHeight + gapY);
+
+      page.drawRectangle({
+        x,
+        y: y - itemHeight,
+        width: itemWidth,
+        height: itemHeight,
+        color: theme.panel,
+        borderColor: theme.panelSoft,
+        borderWidth: 1,
+      });
+
+      const pad = 12;
+      let currentY = y - pad;
+
+      const imgHeight = 110;
+      await drawImageCard(
+        pdfDoc,
+        page,
+        product.images[0],
+        x + pad,
+        currentY - imgHeight,
+        itemWidth - pad * 2,
+        imgHeight,
+        theme,
+        "Фото товару",
+        bodyFont
+      );
+      currentY -= imgHeight + 14;
+
+      currentY = drawTextBlock(page, product.productName, {
+        x: x + pad,
+        y: currentY,
+        maxWidth: itemWidth - pad * 2,
+        font: titleFont,
+        size: 12,
+        color: theme.text,
+        lineHeight: 14,
+        maxLines: 2,
+      });
+
+      currentY -= 6;
+      page.drawText(product.brand || product.category || "", {
+        x: x + pad,
+        y: currentY,
+        size: 9,
+        font: bodyFont,
+        color: theme.muted,
+      });
+      currentY -= 16;
+
+      if (product.attributes.length > 0) {
+        const spec = product.attributes[0];
+        const specText = `${spec.label}: ${spec.value}`;
+        drawTextBlock(page, specText, {
+          x: x + pad,
+          y: currentY,
+          maxWidth: itemWidth - pad * 2,
+          font: bodyFont,
+          size: 9,
+          color: theme.text,
+          lineHeight: 12,
+          maxLines: 1,
+        });
+      }
+
+      if (product.price) {
+        page.drawText(product.price, {
+          x: x + pad,
+          y: y - itemHeight + pad + 4,
+          size: 14,
+          font: titleFont,
+          color: theme.accent,
+        });
+      }
+    }
+  }
+}
+
 export async function generateCatalogPdf({ products, template, contact }: PdfOptions) {
   const pdfDoc = await PDFDocument.create();
   pdfDoc.registerFontkit(fontkit);
 
   const regularFontBytes = await readFirstAvailableFont([
-    path.join(process.cwd(), "assets", "fonts", "noto-sans-cyrillic-400-normal.woff"),
+    path.join(process.cwd(), "assets", "fonts", "Roboto-Regular.ttf"),
   ]);
   const titleFontBytes = await readFirstAvailableFont([
-    path.join(process.cwd(), "assets", "fonts", "noto-serif-cyrillic-700-normal.woff"),
+    path.join(process.cwd(), "assets", "fonts", "Roboto-Bold.ttf"),
   ]);
 
   const titleFont = await pdfDoc.embedFont(titleFontBytes);
@@ -675,8 +808,12 @@ export async function generateCatalogPdf({ products, template, contact }: PdfOpt
   await addCoverPage(pdfDoc, theme, titleFont, bodyFont, products);
   addSummaryPage(pdfDoc, theme, titleFont, bodyFont, products);
 
-  for (const [index, product] of products.entries()) {
-    await addProductPage(pdfDoc, theme, titleFont, bodyFont, product, index);
+  if (template === "grid") {
+    await addGridProductsPages(pdfDoc, theme, titleFont, bodyFont, products);
+  } else {
+    for (const [index, product] of products.entries()) {
+      await addProductPage(pdfDoc, theme, titleFont, bodyFont, product, index);
+    }
   }
 
   addContactPage(pdfDoc, theme, titleFont, bodyFont, contact);

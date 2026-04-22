@@ -23,7 +23,7 @@ export type CatalogProduct = {
   attributes: CatalogAttribute[];
 };
 
-export type CatalogTemplate = "classic-b2b" | "minimal-modern";
+export type CatalogTemplate = "classic-b2b" | "minimal-modern" | "grid";
 
 export type CatalogContact = {
   companyName: string;

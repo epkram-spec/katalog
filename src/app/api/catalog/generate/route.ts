@@ -5,8 +5,7 @@ import { parseWorkbook, validateAndTransformProducts } from "@/lib/catalog";
 import { appConfig } from "@/lib/config";
 import { sendCatalogEmail } from "@/lib/email";
 import { fetchGoogleSheetBuffer } from "@/lib/google-sheets";
-import { renderCatalogHtml } from "@/lib/html-template";
-import { generatePdfFromHtml } from "@/lib/pdf";
+import { generateCatalogPdf } from "@/lib/pdf";
 import {
   cleanupExpiredGeneratedFiles,
   createGeneratedPdfDescriptor,
@@ -107,12 +106,13 @@ export async function POST(request: Request) {
 
     const selectedTemplate = template.data as CatalogTemplate;
     const descriptor = createGeneratedPdfDescriptor(`catalog-${selectedTemplate}`);
-    const html = renderCatalogHtml(products, {
+
+    await generateCatalogPdf({
+      products,
       template: selectedTemplate,
       contact: appConfig.contact,
+      outputPath: descriptor.filePath,
     });
-
-    await generatePdfFromHtml(html, descriptor.filePath);
 
     let emailedTo: string | null = null;
     let fileDeletedAfterEmail = false;

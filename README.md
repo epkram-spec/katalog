@@ -217,6 +217,7 @@ GitHub Pages вміє показувати лише статичні файли.
 9. Якщо хочете, одразу додайте Environment Variables:
    - `PDF_TTL_MINUTES`
    - `DELETE_PDF_AFTER_EMAIL`
+   - `PUPPETEER_SKIP_DOWNLOAD=true`
    - `SMTP_*` якщо потрібна email-відправка
    - `CATALOG_CONTACT_*` для контактної сторінки
 10. Натисніть `Deploy`
@@ -255,6 +256,12 @@ vercel
    - `In which directory is your code located?` -> натисніть `Enter`
 
 5. Після завершення CLI покаже тимчасовий домен `*.vercel.app`
+
+Перед деплоєм на Vercel додайте в Environment Variables:
+
+```text
+PUPPETEER_SKIP_DOWNLOAD=true
+```
 
 ### Якщо треба продакшн-деплой
 

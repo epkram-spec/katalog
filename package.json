@@ -7,13 +7,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "playwright:install": "playwright install chromium",
     "demo:xlsx": "node scripts/create-demo-xlsx.mjs"
   },
   "dependencies": {
+    "@sparticuz/chromium": "^147.0.2",
     "next": "16.2.4",
     "nodemailer": "^8.0.5",
-    "playwright": "^1.59.1",
+    "puppeteer": "^24.42.0",
+    "puppeteer-core": "^24.42.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "xlsx": "^0.18.5",

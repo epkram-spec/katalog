@@ -43,6 +43,7 @@ a {
 
 button,
 input,
+select,
 textarea {
   font: inherit;
 }
@@ -281,7 +282,8 @@ img {
 }
 
 .alert,
-.result-card {
+.result-card,
+.warning-card {
   padding: 18px;
   border-radius: 22px;
   border: 1px solid var(--line);
@@ -299,6 +301,12 @@ img {
 .result-card {
   background: rgba(45, 107, 74, 0.08);
   color: var(--success);
+}
+
+.warning-card {
+  margin-top: 14px;
+  background: rgba(166, 90, 58, 0.08);
+  color: var(--accent);
 }
 
 .result-card a {

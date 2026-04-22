@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "src/app/api/catalog/generate/route.ts": {
+      "maxDuration": 60
+    }
+  }
+}

@@ -4,6 +4,12 @@ export type CatalogAttribute = {
   value: string;
 };
 
+export type CatalogIssue = {
+  row: number;
+  field: string;
+  message: string;
+};
+
 export type CatalogProduct = {
   productName: string;
   sku: string;
@@ -17,8 +23,12 @@ export type CatalogProduct = {
   attributes: CatalogAttribute[];
 };
 
-export type ValidationIssue = {
-  row: number;
-  field: string;
-  message: string;
+export type CatalogTemplate = "classic-b2b" | "minimal-modern";
+
+export type CatalogContact = {
+  companyName: string;
+  personName: string;
+  email: string;
+  phone: string;
+  website: string;
 };

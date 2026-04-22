@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { validateAndTransformProducts, parseWorkbook } from "@/lib/catalog";
+import { parseWorkbook, validateAndTransformProducts } from "@/lib/catalog";
 import { appConfig } from "@/lib/config";
 import { sendCatalogEmail } from "@/lib/email";
 import { fetchGoogleSheetBuffer } from "@/lib/google-sheets";
@@ -14,11 +14,13 @@ import {
   getExpiryDate,
   removeGeneratedFile,
 } from "@/lib/storage";
+import type { CatalogTemplate } from "@/lib/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const emailSchema = z.string().trim().email();
+const templateSchema = z.enum(["classic-b2b", "minimal-modern"]);
 
 export async function POST(request: Request) {
   try {
@@ -29,12 +31,23 @@ export async function POST(request: Request) {
     const file = formData.get("file");
     const sheetUrl = String(formData.get("sheetUrl") ?? "").trim();
     const email = String(formData.get("email") ?? "").trim();
+    const templateInput = String(formData.get("template") ?? "classic-b2b");
 
     if (!(file instanceof File) && !sheetUrl) {
       return NextResponse.json(
         {
-          error:
-            "Завантажте файл .xlsx або .csv, або вставте посилання на Google Sheets.",
+          error: "Завантажте файл .xlsx або .csv, або вставте посилання на Google Sheets.",
+        },
+        { status: 400 },
+      );
+    }
+
+    const template = templateSchema.safeParse(templateInput);
+
+    if (!template.success) {
+      return NextResponse.json(
+        {
+          error: "Оберіть коректний шаблон каталогу.",
         },
         { status: 400 },
       );
@@ -69,13 +82,14 @@ export async function POST(request: Request) {
       );
     }
 
-    const { products, validationErrors } = validateAndTransformProducts(records);
+    const { products, validationErrors, warnings } = validateAndTransformProducts(records);
 
     if (validationErrors.length) {
       return NextResponse.json(
         {
           error: "У таблиці є помилки. Виправте їх і спробуйте ще раз.",
           validationErrors,
+          warnings,
         },
         { status: 400 },
       );
@@ -85,13 +99,18 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error: "Не знайдено жодного валідного товару для каталогу.",
+          warnings,
         },
         { status: 400 },
       );
     }
 
-    const descriptor = createGeneratedPdfDescriptor("catalog");
-    const html = renderCatalogHtml(products);
+    const selectedTemplate = template.data as CatalogTemplate;
+    const descriptor = createGeneratedPdfDescriptor(`catalog-${selectedTemplate}`);
+    const html = renderCatalogHtml(products, {
+      template: selectedTemplate,
+      contact: appConfig.contact,
+    });
 
     await generatePdfFromHtml(html, descriptor.filePath);
 
@@ -121,6 +140,7 @@ export async function POST(request: Request) {
       fileDeletedAfterEmail,
       productCount: products.length,
       fileName: fileDeletedAfterEmail ? null : descriptor.fileName,
+      warnings,
     });
   } catch (error) {
     const message =

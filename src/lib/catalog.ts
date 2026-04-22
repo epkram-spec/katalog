@@ -1,6 +1,6 @@
 import * as XLSX from "xlsx";
 
-import type { CatalogAttribute, CatalogProduct, ValidationIssue } from "@/lib/types";
+import type { CatalogAttribute, CatalogIssue, CatalogProduct } from "@/lib/types";
 
 type RawRecord = Record<string, string | number | boolean | null | undefined>;
 
@@ -65,12 +65,16 @@ export function parseWorkbook(buffer: Buffer, fileName: string) {
 }
 
 export function validateAndTransformProducts(records: RawRecord[]) {
-  const validationErrors: ValidationIssue[] = [];
-  const nonEmptyRecords = records.filter((record) =>
-    Object.values(record).some((value) => toStringValue(value)),
-  );
+  const validationErrors: CatalogIssue[] = [];
+  const warnings: CatalogIssue[] = [];
+  const rows = records
+    .map((record, index) => ({
+      rowNumber: index + 2,
+      record,
+    }))
+    .filter(({ record }) => Object.values(record).some((value) => toStringValue(value)));
 
-  const products = nonEmptyRecords.map((record, index) => {
+  const products = rows.map(({ record, rowNumber }) => {
     const normalized = Object.fromEntries(
       Object.entries(record).map(([key, value]) => [normalizeHeader(key), toStringValue(value)]),
     );
@@ -80,7 +84,7 @@ export function validateAndTransformProducts(records: RawRecord[]) {
 
     if (!productName) {
       validationErrors.push({
-        row: index + 2,
+        row: rowNumber,
         field: "product_name",
         message: "Колонка product_name є обов'язковою.",
       });
@@ -88,7 +92,7 @@ export function validateAndTransformProducts(records: RawRecord[]) {
 
     if (!normalized.image_1) {
       validationErrors.push({
-        row: index + 2,
+        row: rowNumber,
         field: "image_1",
         message: "Колонка image_1 є обов'язковою.",
       });
@@ -99,7 +103,7 @@ export function validateAndTransformProducts(records: RawRecord[]) {
 
       if (value && !isValidUrl(value)) {
         validationErrors.push({
-          row: index + 2,
+          row: rowNumber,
           field: column,
           message: `Поле ${column} має містити коректний URL.`,
         });
@@ -113,6 +117,38 @@ export function validateAndTransformProducts(records: RawRecord[]) {
         label: toAttributeLabel(key),
         value,
       }));
+
+    if (!normalized.brand && !normalized.category) {
+      warnings.push({
+        row: rowNumber,
+        field: "brand/category",
+        message: "Бажано вказати brand або category для кращого вигляду каталогу.",
+      });
+    }
+
+    if (!normalized.price) {
+      warnings.push({
+        row: rowNumber,
+        field: "price",
+        message: "Ціна не вказана. У PDF буде показано “За запитом”.",
+      });
+    }
+
+    if (!normalized.short_description && !normalized.description) {
+      warnings.push({
+        row: rowNumber,
+        field: "description",
+        message: "Немає short_description або description. Сторінка товару буде дуже лаконічною.",
+      });
+    }
+
+    if (!attributes.length) {
+      warnings.push({
+        row: rowNumber,
+        field: "attr_*",
+        message: "Немає характеристик attr_*. Таблиця характеристик покаже примітку-заглушку.",
+      });
+    }
 
     return {
       productName,
@@ -135,5 +171,6 @@ export function validateAndTransformProducts(records: RawRecord[]) {
   return {
     products: filteredProducts,
     validationErrors,
+    warnings,
   };
 }

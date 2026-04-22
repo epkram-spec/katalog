@@ -32,6 +32,13 @@ export const appConfig = {
     pass: process.env.SMTP_PASS,
     from: process.env.SMTP_FROM,
   },
+  contact: {
+    companyName: process.env.CATALOG_CONTACT_COMPANY ?? "Your Company",
+    personName: process.env.CATALOG_CONTACT_PERSON ?? "Sales Team",
+    email: process.env.CATALOG_CONTACT_EMAIL ?? "sales@example.com",
+    phone: process.env.CATALOG_CONTACT_PHONE ?? "+380 00 000 00 00",
+    website: process.env.CATALOG_CONTACT_WEBSITE ?? "https://example.com",
+  },
 };
 
 export function isSmtpConfigured() {

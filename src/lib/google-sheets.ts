@@ -14,13 +14,16 @@ export function toGoogleSheetsCsvUrl(input: string) {
   const match = url.pathname.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
 
   if (!match) {
-    throw new Error("Не вдалося знайти ID таблиці в посиланні Google Sheets.");
+    throw new Error("Не вдалося знайти spreadsheetId у посиланні Google Sheets.");
   }
 
   const spreadsheetId = match[1];
-  const gid = url.searchParams.get("gid") ?? "0";
+  const hashGid = url.hash.match(/gid=(\d+)/)?.[1];
+  const gid = url.searchParams.get("gid") ?? hashGid;
 
-  return `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${gid}`;
+  return gid
+    ? `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${gid}`
+    : `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv`;
 }
 
 export async function fetchGoogleSheetBuffer(input: string) {
@@ -31,7 +34,7 @@ export async function fetchGoogleSheetBuffer(input: string) {
 
   if (!response.ok) {
     throw new Error(
-      "Не вдалося завантажити Google Sheets. Переконайтеся, що таблиця відкрита для перегляду.",
+      "Не вдалося завантажити Google Sheets. Переконайтеся, що таблиця є публічною та доступною за посиланням.",
     );
   }
 

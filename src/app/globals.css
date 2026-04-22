@@ -1,7 +1,7 @@
 :root {
   --font-sans: "Aptos", "Segoe UI Variable Text", "Segoe UI", sans-serif;
-  --font-serif: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
-  --bg: #f5f1eb;
+  --font-serif: "Georgia", "Iowan Old Style", "Palatino Linotype", serif;
+  --bg: #f4efe8;
   --surface: rgba(255, 255, 255, 0.82);
   --surface-strong: #fffdfa;
   --line: rgba(40, 33, 27, 0.1);
@@ -56,7 +56,7 @@ img {
 .shell {
   width: min(1080px, calc(100% - 32px));
   margin: 0 auto;
-  padding: 32px 0 64px;
+  padding: 24px 0 56px;
 }
 
 .shell--narrow {
@@ -65,10 +65,10 @@ img {
 
 .hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(250px, 0.75fr);
-  gap: 20px;
+  grid-template-columns: minmax(0, 1.42fr) minmax(260px, 0.72fr);
+  gap: 18px;
   align-items: stretch;
-  margin-bottom: 22px;
+  margin-bottom: 18px;
 }
 
 .hero__copy,
@@ -82,7 +82,7 @@ img {
 
 .hero__copy {
   border-radius: 28px;
-  padding: 28px;
+  padding: 24px;
 }
 
 .hero__topline,
@@ -107,7 +107,7 @@ img {
 
 .subtle-link {
   color: var(--muted);
-  font-size: 0.92rem;
+  font-size: 0.88rem;
 }
 
 .subtle-link:hover {
@@ -116,49 +116,49 @@ img {
 
 .hero h1,
 .page-title {
-  margin-top: 16px;
+  margin-top: 14px;
   font-family: var(--font-serif), serif;
-  font-size: clamp(2rem, 4vw, 3.45rem);
-  line-height: 1.02;
-  letter-spacing: -0.04em;
+  font-size: clamp(1.9rem, 3.6vw, 3rem);
+  line-height: 1.05;
+  letter-spacing: -0.035em;
 }
 
 .hero p,
 .section-copy {
   color: var(--muted);
-  font-size: 0.98rem;
-  line-height: 1.72;
+  font-size: 0.95rem;
+  line-height: 1.66;
 }
 
 .hero p {
   max-width: 56ch;
-  margin-top: 16px;
+  margin-top: 14px;
 }
 
 .hero__meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 20px;
+  gap: 8px;
+  margin-top: 18px;
 }
 
 .hero__meta span,
 .tag {
   display: inline-flex;
   align-items: center;
-  min-height: 34px;
-  padding: 7px 12px;
+  min-height: 32px;
+  padding: 6px 11px;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.56);
   color: var(--muted);
-  font-size: 0.86rem;
+  font-size: 0.8rem;
 }
 
 .hero__card,
 .panel {
   border-radius: 24px;
-  padding: 22px;
+  padding: 20px;
 }
 
 .hero__card p,
@@ -171,10 +171,10 @@ img {
 .status-list,
 .feature-list {
   display: grid;
-  gap: 8px;
-  margin-top: 14px;
+  gap: 7px;
+  margin-top: 12px;
   color: var(--muted);
-  line-height: 1.6;
+  line-height: 1.55;
 }
 
 .hero__card li,
@@ -186,7 +186,7 @@ img {
 .grid {
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
-  gap: 20px;
+  gap: 18px;
 }
 
 .panel--stack {
@@ -196,32 +196,13 @@ img {
 }
 
 .panel--form {
-  padding: 24px;
-}
-
-.mode-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-top: 18px;
-}
-
-.mode-card {
-  padding: 16px;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.56);
-}
-
-.mode-card strong {
-  display: block;
-  margin-bottom: 6px;
+  padding: 22px;
 }
 
 .form {
   display: grid;
-  gap: 16px;
-  margin-top: 20px;
+  gap: 14px;
+  margin-top: 18px;
 }
 
 .field {
@@ -230,14 +211,14 @@ img {
 }
 
 .field label {
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   font-weight: 700;
 }
 
 .field small {
   color: var(--muted);
-  line-height: 1.5;
-  font-size: 0.9rem;
+  line-height: 1.45;
+  font-size: 0.84rem;
 }
 
 .input,
@@ -252,8 +233,8 @@ img {
 
 .input,
 .textarea {
-  min-height: 46px;
-  padding: 12px 14px;
+  min-height: 42px;
+  padding: 11px 13px;
 }
 
 .textarea {
@@ -262,7 +243,7 @@ img {
 }
 
 .file-input {
-  padding: 10px 12px;
+  padding: 9px 11px;
 }
 
 .actions {
@@ -276,8 +257,8 @@ img {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 44px;
-  padding: 0 18px;
+  min-height: 40px;
+  padding: 0 16px;
   border: 0;
   border-radius: 999px;
   cursor: pointer;
@@ -307,8 +288,8 @@ img {
 .alert,
 .result-card,
 .warning-card {
-  padding: 16px;
-  border-radius: 18px;
+  padding: 14px;
+  border-radius: 16px;
   border: 1px solid var(--line);
 }
 
@@ -347,9 +328,9 @@ img {
 
 .demo-links a {
   display: inline-flex;
-  min-height: 38px;
+  min-height: 36px;
   align-items: center;
-  padding: 0 14px;
+  padding: 0 13px;
   border-radius: 999px;
   border: 1px solid var(--line);
   background: var(--surface-strong);
@@ -371,8 +352,7 @@ code {
 
 @media (max-width: 920px) {
   .hero,
-  .grid,
-  .mode-grid {
+  .grid {
     grid-template-columns: 1fr;
   }
 
@@ -385,7 +365,7 @@ code {
   .hero__copy,
   .hero__card,
   .panel {
-    padding: 20px;
+    padding: 18px;
     border-radius: 22px;
   }
 

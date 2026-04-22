@@ -5,14 +5,14 @@ import { appConfig, isSmtpConfigured } from "@/lib/config";
 type SendCatalogEmailInput = {
   to: string;
   fileName: string;
-  filePath: string;
+  pdfBytes: Uint8Array;
   productCount: number;
 };
 
 export async function sendCatalogEmail({
   to,
   fileName,
-  filePath,
+  pdfBytes,
   productCount,
 }: SendCatalogEmailInput) {
   if (!isSmtpConfigured()) {
@@ -43,7 +43,7 @@ export async function sendCatalogEmail({
     attachments: [
       {
         filename: fileName,
-        path: filePath,
+        content: Buffer.from(pdfBytes),
       },
     ],
   });

@@ -1,5 +1,3 @@
-const DEFAULT_TTL_MINUTES = 60;
-
 function parseBoolean(value: string | undefined, fallback: boolean) {
   if (value === undefined) {
     return fallback;
@@ -19,11 +17,6 @@ function parseNumber(value: string | undefined, fallback: number) {
 }
 
 export const appConfig = {
-  pdfTtlMinutes: parseNumber(process.env.PDF_TTL_MINUTES, DEFAULT_TTL_MINUTES),
-  deletePdfAfterEmail: parseBoolean(
-    process.env.DELETE_PDF_AFTER_EMAIL,
-    false,
-  ),
   smtp: {
     host: process.env.SMTP_HOST,
     port: parseNumber(process.env.SMTP_PORT, 587),

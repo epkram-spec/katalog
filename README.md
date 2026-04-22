@@ -2,43 +2,24 @@
 
 Веб-застосунок на `Next.js + TypeScript` для генерації PDF-каталогів з `Excel`, `CSV` або публічного `Google Sheets`.
 
-## Що вже реалізовано
+## Що вміє зараз
 
-- Завантаження `.xlsx` або `.csv`
-- Імпорт з публічного `Google Sheets`
-- Ігнорування повністю порожніх рядків
-- Валідація:
-  - `product_name` обов’язковий
-  - `image_1` обов’язковий
-  - `image_1..image_3` мають бути валідними URL
-- Warning-и в UI для необов’язкових, але бажаних полів
+- завантаження `.xlsx` і `.csv`
+- імпорт із публічного `Google Sheets`
+- ігнорування повністю порожніх рядків
+- валідація `product_name`, `image_1` і URL у `image_1..image_3`
+- показ помилок і warning-ів у UI
 - 2 шаблони каталогу:
   - `Classic B2B`
   - `Minimal Modern`
-- PDF містить:
-  - обкладинку
-  - список товарів
-  - сторінки товарів
-  - фінальну контактну сторінку
-- Placeholder для зображень, якщо картинка не завантажилась
-- Тимчасове зберігання PDF у `tmp/generated`
-- Download link для готового PDF
-- Опційна email-відправка через SMTP
-
-## Технології
-
-- `Next.js 16`
-- `TypeScript`
-- `server route handlers`
-- `Puppeteer`
-- `@sparticuz/chromium` для Vercel
-- `xlsx`
-- `nodemailer`
-- `zod`
+- генерація PDF у форматі A4
+- placeholder для фото, якщо зображення не завантажилось
+- фінальна контактна сторінка
+- опційна email-відправка PDF через SMTP
 
 ## Формат таблиці
 
-### Підтримувані колонки
+Підтримувані колонки:
 
 - `product_name` `required`
 - `sku`
@@ -51,18 +32,9 @@
 - `image_2`
 - `image_3`
 - `order`
-- будь-які колонки, що починаються з `attr_`
+- будь-які колонки з префіксом `attr_`
 
-### Як працюють `attr_*`
-
-Усі колонки з префіксом `attr_` автоматично потрапляють у таблицю характеристик товару.
-
-Приклади:
-
-- `attr_color`
-- `attr_material`
-- `attr_size`
-- `attr_warranty`
+Усі `attr_*` колонки автоматично стають таблицею характеристик товару.
 
 ## Google Sheets
 
@@ -76,20 +48,18 @@ https://docs.google.com/spreadsheets/d/SPREADSHEET_ID/edit?gid=123456
 https://docs.google.com/spreadsheets/d/SPREADSHEET_ID
 ```
 
-Що робить застосунок:
+Сервіс:
 
 - дістає `spreadsheetId`
-- якщо в URL є `gid`, читає саме цей лист
-- якщо `gid` немає, пробує CSV export для першого доступного листа
+- якщо є `gid`, пробує взяти саме цей лист
+- якщо `gid` немає, читає перший доступний лист
 
 ## Demo-файли
-
-У репозиторії є готові demo-файли з 5 товарами:
 
 - `public/demo/catalog-demo.csv`
 - `public/demo/catalog-demo.xlsx`
 
-Щоб згенерувати `xlsx` повторно:
+Щоб заново згенерувати `.xlsx`:
 
 ```bash
 npm run demo:xlsx
@@ -104,13 +74,13 @@ npm run demo:xlsx
 npm install
 ```
 
-3. Створіть файл `.env.local` на основі прикладу:
+3. Створіть `.env.local` на основі прикладу:
 
 ```bash
 cp .env.example .env.local
 ```
 
-Для Windows PowerShell можна так:
+Для PowerShell:
 
 ```powershell
 Copy-Item .env.example .env.local
@@ -131,9 +101,6 @@ http://localhost:3000
 ## Змінні середовища
 
 ```env
-PDF_TTL_MINUTES=60
-DELETE_PDF_AFTER_EMAIL=false
-
 SMTP_HOST=
 SMTP_PORT=587
 SMTP_SECURE=false
@@ -150,85 +117,56 @@ CATALOG_CONTACT_WEBSITE=https://example.com
 
 ### Для чого вони потрібні
 
-- `PDF_TTL_MINUTES`
-  Час життя тимчасового PDF
-- `DELETE_PDF_AFTER_EMAIL`
-  Якщо `true`, файл видаляється після успішної email-відправки
 - `SMTP_*`
-  Потрібні лише для надсилання PDF на email
+  потрібні лише для надсилання PDF на email
 - `CATALOG_CONTACT_*`
-  Дані для фінальної контактної сторінки PDF
+  використовуються на фінальній контактній сторінці PDF
 
 ## Де змінювати шаблони
 
-Основний файл шаблонів:
+Головна логіка генерації PDF:
 
-- `src/lib/html-template.ts`
+- `src/lib/pdf.ts`
 
-Там змінюються:
+Головний UI:
 
-- стилі `Classic B2B`
-- стилі `Minimal Modern`
-- обкладинка
-- сторінка товару
-- контактна сторінка
-- placeholder для відсутніх зображень
+- `src/components/catalog-generator.tsx`
+- `src/app/page.tsx`
+- `src/app/globals.css`
 
-## Де зберігається PDF
+## Як завантажити на Vercel
 
-Тимчасові файли потрапляють у:
-
-```text
-tmp/generated
-```
-
-Старі PDF очищаються автоматично при наступних генераціях.
-
-## Чому GitHub Pages не підходить
-
-GitHub Pages вміє показувати лише статичні файли.
-
-А цей проєкт використовує:
-
-- серверні API routes
-- генерацію PDF через Node.js
-- тимчасове файлове сховище
-- SMTP email-відправку
-
-Тому для хостингу використовуйте `Vercel`, а не GitHub Pages.
-
-## Як завантажити на Vercel дуже просто
-
-Офіційні джерела:
-
-- [Next.js on Vercel](https://vercel.com/docs/frameworks/nextjs)
-- [Environment Variables](https://vercel.com/docs/environment-variables)
-
-### Варіант 1. Через сайт Vercel
+### Варіант через сайт Vercel
 
 1. Відкрийте [vercel.com](https://vercel.com/)
-2. Натисніть `Sign up` або `Log in`
+2. Натисніть `Log in`
 3. Увійдіть через GitHub
 4. Натисніть `Add New...`
 5. Оберіть `Project`
 6. Виберіть репозиторій `katalog`
 7. Натисніть `Import`
-8. Нічого складного не міняйте
-9. Якщо хочете, одразу додайте Environment Variables:
-   - `PDF_TTL_MINUTES`
-   - `DELETE_PDF_AFTER_EMAIL`
-   - `PUPPETEER_SKIP_DOWNLOAD=true`
-   - `SMTP_*` якщо потрібна email-відправка
-   - `CATALOG_CONTACT_*` для контактної сторінки
+8. У блоці `Environment Variables` додайте, якщо потрібна email-відправка:
+   - `SMTP_HOST`
+   - `SMTP_PORT`
+   - `SMTP_SECURE`
+   - `SMTP_USER`
+   - `SMTP_PASS`
+   - `SMTP_FROM`
+9. Якщо хочете свої контакти в PDF, додайте:
+   - `CATALOG_CONTACT_COMPANY`
+   - `CATALOG_CONTACT_PERSON`
+   - `CATALOG_CONTACT_EMAIL`
+   - `CATALOG_CONTACT_PHONE`
+   - `CATALOG_CONTACT_WEBSITE`
 10. Натисніть `Deploy`
 
-Після цього Vercel сам дасть тимчасовий домен приблизно такого виду:
+Після деплою Vercel дасть тимчасовий домен виду:
 
 ```text
 https://katalog-xxxxx.vercel.app
 ```
 
-### Варіант 2. Через Vercel CLI
+### Варіант через Vercel CLI
 
 1. Встановіть CLI:
 
@@ -242,39 +180,23 @@ npm i -g vercel
 vercel login
 ```
 
-3. У папці проєкту запустіть:
+3. У папці проєкту виконайте:
 
 ```bash
 vercel
 ```
 
-4. Відповідайте просто:
-   - `Set up and deploy?` -> `Y`
-   - `Which scope?` -> оберіть свій акаунт
-   - `Link to existing project?` -> `N`, якщо проєкту ще нема
-   - `Project name?` -> `katalog`
-   - `In which directory is your code located?` -> натисніть `Enter`
-
-5. Після завершення CLI покаже тимчасовий домен `*.vercel.app`
-
-Перед деплоєм на Vercel додайте в Environment Variables:
-
-```text
-PUPPETEER_SKIP_DOWNLOAD=true
-```
-
-### Якщо треба продакшн-деплой
+4. Якщо потрібно одразу продакшн-посилання:
 
 ```bash
 vercel --prod
 ```
 
-## Критерії готовності
+## Що перевірити після деплою
 
-- Можна завантажити `xlsx` і отримати PDF
-- Можна вставити публічний `Google Sheets` link і отримати PDF
-- При невалідній таблиці видно зрозумілі помилки
-- PDF містить фото, назви, описи і характеристики
-- Є 2 шаблони оформлення
-- Є demo-файл для перевірки
-- Проєкт готовий до деплою на Vercel
+- відкривається головна сторінка
+- можна завантажити `xlsx` і отримати PDF
+- можна вставити публічний `Google Sheets` link і отримати PDF
+- при невалідній таблиці видно зрозумілі помилки
+- працюють обидва шаблони
+- demo-файл проходить генерацію без ручних змін

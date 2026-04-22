@@ -6,13 +6,6 @@ import { appConfig } from "@/lib/config";
 import { sendCatalogEmail } from "@/lib/email";
 import { fetchGoogleSheetBuffer } from "@/lib/google-sheets";
 import { generateCatalogPdf } from "@/lib/pdf";
-import {
-  cleanupExpiredGeneratedFiles,
-  createGeneratedPdfDescriptor,
-  ensureGeneratedDir,
-  getExpiryDate,
-  removeGeneratedFile,
-} from "@/lib/storage";
 import type { CatalogTemplate } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -23,9 +16,6 @@ const templateSchema = z.enum(["classic-b2b", "minimal-modern"]);
 
 export async function POST(request: Request) {
   try {
-    await ensureGeneratedDir();
-    await cleanupExpiredGeneratedFiles();
-
     const formData = await request.formData();
     const file = formData.get("file");
     const sheetUrl = String(formData.get("sheetUrl") ?? "").trim();
@@ -105,42 +95,33 @@ export async function POST(request: Request) {
     }
 
     const selectedTemplate = template.data as CatalogTemplate;
-    const descriptor = createGeneratedPdfDescriptor(`catalog-${selectedTemplate}`);
-
-    await generateCatalogPdf({
+    const fileName = `catalog-${selectedTemplate}.pdf`;
+    const pdfBytes = await generateCatalogPdf({
       products,
       template: selectedTemplate,
       contact: appConfig.contact,
-      outputPath: descriptor.filePath,
     });
-
-    let emailedTo: string | null = null;
-    let fileDeletedAfterEmail = false;
 
     if (email) {
       await sendCatalogEmail({
         to: email,
-        fileName: descriptor.fileName,
-        filePath: descriptor.filePath,
+        fileName,
+        pdfBytes,
         productCount: products.length,
       });
-
-      emailedTo = email;
-
-      if (appConfig.deletePdfAfterEmail) {
-        await removeGeneratedFile(descriptor.filePath);
-        fileDeletedAfterEmail = true;
-      }
     }
 
-    return NextResponse.json({
-      downloadUrl: fileDeletedAfterEmail ? null : descriptor.downloadUrl,
-      emailedTo,
-      expiresAt: fileDeletedAfterEmail ? null : getExpiryDate().toISOString(),
-      fileDeletedAfterEmail,
-      productCount: products.length,
-      fileName: fileDeletedAfterEmail ? null : descriptor.fileName,
-      warnings,
+    return new NextResponse(Buffer.from(pdfBytes), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename="${fileName}"`,
+        "Cache-Control": "no-store",
+        "X-Catalog-File-Name": encodeURIComponent(fileName),
+        "X-Catalog-Product-Count": String(products.length),
+        "X-Catalog-Warnings": encodeURIComponent(JSON.stringify(warnings)),
+        "X-Catalog-Emailed-To": encodeURIComponent(email),
+      },
     });
   } catch (error) {
     const message =

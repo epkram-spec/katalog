@@ -6,8 +6,8 @@ export default function InstructionsPage() {
           <span className="eyebrow">Інструкції</span>
           <h1 className="page-title">Як підготувати таблицю для каталогу</h1>
           <p className="section-copy">
-            На цій сторінці залишені технічні пояснення та підказки. Головна
-            сторінка тепер чистіша і зосереджена лише на створенні PDF.
+            Тут зібрані лише підказки по структурі таблиці, формату даних і швидкому старту.
+            Головна сторінка лишається чистою та зосередженою на генерації PDF.
           </p>
         </div>
 
@@ -32,8 +32,7 @@ export default function InstructionsPage() {
               <code>sku</code>, <code>brand</code>, <code>category</code>
             </li>
             <li>
-              <code>short_description</code>, <code>description</code>,{" "}
-              <code>price</code>
+              <code>short_description</code>, <code>description</code>, <code>price</code>
             </li>
             <li>
               <code>image_2</code>, <code>image_3</code>, <code>order</code>
@@ -47,8 +46,8 @@ export default function InstructionsPage() {
         <div>
           <h2>Google Sheets</h2>
           <p className="section-copy">
-            Працюють лише публічні посилання на Google Sheets. Якщо в URL є{" "}
-            <code>gid</code>, сервіс спробує використати саме цей лист.
+            Працюють лише публічні посилання на Google Sheets. Якщо в URL є <code>gid</code>,
+            сервіс спробує використати саме цей лист.
           </p>
         </div>
 

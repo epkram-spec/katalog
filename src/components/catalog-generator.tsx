@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 
 import type { CatalogIssue, CatalogTemplate } from "@/lib/types";
 
@@ -11,12 +11,10 @@ type ApiError = {
 };
 
 type ApiSuccess = {
-  downloadUrl: string | null;
+  downloadUrl: string;
   emailedTo: string | null;
-  expiresAt: string | null;
-  fileDeletedAfterEmail: boolean;
   productCount: number;
-  fileName: string | null;
+  fileName: string;
   warnings: CatalogIssue[];
 };
 
@@ -33,6 +31,18 @@ const templateOptions: Array<{ value: CatalogTemplate; label: string; descriptio
   },
 ];
 
+function parseHeaderJson<T>(value: string | null, fallback: T) {
+  if (!value) {
+    return fallback;
+  }
+
+  try {
+    return JSON.parse(decodeURIComponent(value)) as T;
+  } catch {
+    return fallback;
+  }
+}
+
 export function CatalogGenerator() {
   const [isLoading, setIsLoading] = useState(false);
   const [sourceFile, setSourceFile] = useState<File | null>(null);
@@ -42,10 +52,36 @@ export function CatalogGenerator() {
   const [error, setError] = useState<ApiError | null>(null);
   const [result, setResult] = useState<ApiSuccess | null>(null);
 
+  useEffect(() => {
+    return () => {
+      if (result?.downloadUrl) {
+        URL.revokeObjectURL(result.downloadUrl);
+      }
+    };
+  }, [result]);
+
+  useEffect(() => {
+    if (!result?.downloadUrl) {
+      return;
+    }
+
+    const link = document.createElement("a");
+    link.href = result.downloadUrl;
+    link.download = result.fileName;
+    document.body.append(link);
+    link.click();
+    link.remove();
+  }, [result]);
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsLoading(true);
     setError(null);
+
+    if (result?.downloadUrl) {
+      URL.revokeObjectURL(result.downloadUrl);
+    }
+
     setResult(null);
 
     const formData = new FormData();
@@ -70,14 +106,33 @@ export function CatalogGenerator() {
         body: formData,
       });
 
-      const payload = (await response.json()) as ApiError | ApiSuccess;
+      const contentType = response.headers.get("content-type") ?? "";
 
-      if (!response.ok) {
-        setError(payload as ApiError);
+      if (!response.ok || contentType.includes("application/json")) {
+        const payload = (await response.json()) as ApiError;
+        setError(payload);
         return;
       }
 
-      setResult(payload as ApiSuccess);
+      const blob = await response.blob();
+      const downloadUrl = URL.createObjectURL(blob);
+      const fileName = decodeURIComponent(
+        response.headers.get("X-Catalog-File-Name") ?? "catalog.pdf",
+      );
+      const emailedTo = decodeURIComponent(response.headers.get("X-Catalog-Emailed-To") ?? "") || null;
+      const productCount = Number(response.headers.get("X-Catalog-Product-Count") ?? "0");
+      const warnings = parseHeaderJson<CatalogIssue[]>(
+        response.headers.get("X-Catalog-Warnings"),
+        [],
+      );
+
+      setResult({
+        downloadUrl,
+        emailedTo,
+        productCount,
+        fileName,
+        warnings,
+      });
     } catch {
       setError({
         error: "Не вдалося згенерувати каталог. Спробуйте ще раз.",
@@ -88,6 +143,10 @@ export function CatalogGenerator() {
   }
 
   function handleReset() {
+    if (result?.downloadUrl) {
+      URL.revokeObjectURL(result.downloadUrl);
+    }
+
     setSourceFile(null);
     setSheetUrl("");
     setEmail("");
@@ -162,7 +221,7 @@ export function CatalogGenerator() {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
             />
-            <small>Необов’язково.</small>
+            <small>Необов&apos;язково.</small>
           </div>
 
           <div className="actions">
@@ -210,21 +269,14 @@ export function CatalogGenerator() {
         {result ? (
           <div className="result-card" style={{ marginTop: 18 }}>
             <p>Готово. У каталозі {result.productCount} товарів.</p>
-            {result.downloadUrl ? (
-              <p style={{ marginTop: 8 }}>
-                <a href={result.downloadUrl} target="_blank" rel="noreferrer">
-                  Завантажити PDF
-                </a>
-              </p>
-            ) : null}
+            <p style={{ marginTop: 8 }}>
+              <a href={result.downloadUrl} download={result.fileName}>
+                Завантажити PDF ще раз
+              </a>
+            </p>
             {result.emailedTo ? (
               <p style={{ marginTop: 8 }}>
                 PDF надіслано на <strong>{result.emailedTo}</strong>.
-              </p>
-            ) : null}
-            {result.expiresAt ? (
-              <p style={{ marginTop: 8 }}>
-                Посилання активне до {new Date(result.expiresAt).toLocaleString("uk-UA")}.
               </p>
             ) : null}
             {result.warnings.length ? (

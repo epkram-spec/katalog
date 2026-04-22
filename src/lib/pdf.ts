@@ -1,14 +1,8 @@
-import { access, readFile, writeFile } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 import path from "node:path";
 
 import fontkit from "@pdf-lib/fontkit";
-import {
-  PDFDocument,
-  rgb,
-  type PDFFont,
-  type PDFImage,
-  type PDFPage,
-} from "pdf-lib";
+import { PDFDocument, rgb, type PDFFont, type PDFImage, type PDFPage } from "pdf-lib";
 
 import type { CatalogContact, CatalogProduct, CatalogTemplate } from "@/lib/types";
 
@@ -16,7 +10,6 @@ type PdfOptions = {
   products: CatalogProduct[];
   template: CatalogTemplate;
   contact: CatalogContact;
-  outputPath: string;
 };
 
 type Theme = {
@@ -623,15 +616,19 @@ function addContactPage(
     color: theme.accent,
   });
 
-  drawTextBlock(page, "Готові обговорити каталог, прайс або індивідуальну підбірку товарів.", {
-    x: 78,
-    y: 582,
-    maxWidth: 360,
-    font: titleFont,
-    size: 26,
-    color: theme.text,
-    lineHeight: 30,
-  });
+  drawTextBlock(
+    page,
+    "Готові обговорити каталог, прайс або індивідуальну підбірку товарів.",
+    {
+      x: 78,
+      y: 582,
+      maxWidth: 360,
+      font: titleFont,
+      size: 26,
+      color: theme.text,
+      lineHeight: 30,
+    },
+  );
 
   const rows = [
     ["Компанія", contact.companyName],
@@ -660,38 +657,15 @@ function addContactPage(
   });
 }
 
-export async function generateCatalogPdf({
-  products,
-  template,
-  contact,
-  outputPath,
-}: PdfOptions) {
+export async function generateCatalogPdf({ products, template, contact }: PdfOptions) {
   const pdfDoc = await PDFDocument.create();
   pdfDoc.registerFontkit(fontkit);
 
   const regularFontBytes = await readFirstAvailableFont([
-    path.join(
-      process.cwd(),
-      "assets",
-      "fonts",
-      "noto-sans-cyrillic-400-normal.woff",
-    ),
-    "C:\\Windows\\Fonts\\arial.ttf",
-    "C:\\Windows\\Fonts\\segoeui.ttf",
-    "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-    "/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf",
+    path.join(process.cwd(), "assets", "fonts", "noto-sans-cyrillic-400-normal.woff"),
   ]);
   const titleFontBytes = await readFirstAvailableFont([
-    path.join(
-      process.cwd(),
-      "assets",
-      "fonts",
-      "noto-serif-cyrillic-700-normal.woff",
-    ),
-    "C:\\Windows\\Fonts\\georgiab.ttf",
-    "C:\\Windows\\Fonts\\arialbd.ttf",
-    "/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf",
-    "/usr/share/fonts/truetype/liberation2/LiberationSerif-Bold.ttf",
+    path.join(process.cwd(), "assets", "fonts", "noto-serif-cyrillic-700-normal.woff"),
   ]);
 
   const titleFont = await pdfDoc.embedFont(titleFontBytes);
@@ -707,6 +681,5 @@ export async function generateCatalogPdf({
 
   addContactPage(pdfDoc, theme, titleFont, bodyFont, contact);
 
-  const bytes = await pdfDoc.save();
-  await writeFile(outputPath, bytes);
+  return await pdfDoc.save();
 }

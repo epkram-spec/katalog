@@ -672,10 +672,8 @@ export async function generateCatalogPdf({
   const regularFontBytes = await readFirstAvailableFont([
     path.join(
       process.cwd(),
-      "node_modules",
-      "@fontsource",
-      "noto-sans",
-      "files",
+      "assets",
+      "fonts",
       "noto-sans-cyrillic-400-normal.woff",
     ),
     "C:\\Windows\\Fonts\\arial.ttf",
@@ -686,10 +684,8 @@ export async function generateCatalogPdf({
   const titleFontBytes = await readFirstAvailableFont([
     path.join(
       process.cwd(),
-      "node_modules",
-      "@fontsource",
-      "noto-serif",
-      "files",
+      "assets",
+      "fonts",
       "noto-serif-cyrillic-700-normal.woff",
     ),
     "C:\\Windows\\Fonts\\georgiab.ttf",
